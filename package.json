@@ -3,12 +3,17 @@
   "version": "1.0.0",
   "description": "discovery api ",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Njoku Goodluck",
   "license": "ISC",
   "dependencies": {
+    "@apollo/server": "^4.10.0",
+    "@graphql-tools/merge": "^9.0.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.1",
     "mongoose": "^8.1.1"
   }
 }
