@@ -1,27 +1,30 @@
 
-import {User} from '../model/user';
+import { User } from '../model/user';
 
-export const UsersResolver = {
-    Query : {
+const handleUserNotFoundError = (id) => {
+    throw new Error(`User with id ${id} not found`);
+};
+
+const UsersResolver = {
+    Query: {
         users: async () => {
             try {
                 const users = await User.find({});
-                if (!users) throw new Error('No users found');
                 return {
                     success: true,
                     total: users.length,
                     users
                 };
             } catch (error) {
-                throw error;
+                throw new Error('Failed to fetch users');
             }
-        },    
+        },
 
-        user: async (_, args) => {
+        user: async (_, { id }) => {
             try {
-                if (!args.id) throw new Error('No id provided');
-                const user = await User.findById(args.id);
-                if (!user) throw new Error('No user found');
+                if (!id) throw new Error('No id provided');
+                const user = await User.findById(id);
+                if (!user) handleUserNotFoundError(id);
                 return user;
             } catch (error) {
                 throw error;
@@ -29,27 +32,23 @@ export const UsersResolver = {
         }
     },
 
-    Mutation : {
+    Mutation: {
         regUser: async (_, args) => {
             try {
-                const user = await User.findOne({email: args.email});
-                if (user) throw new Error('User already exists');
-                const newUser = await User.create({
-                    username: args.username,
-                    email: args.email,
-                    password: args.password
-                })
+                const existingUser = await User.findOne({ email: args.email });
+                if (existingUser) throw new Error('User already exists');
+                const newUser = await User.create(args);
                 return newUser;
             } catch (error) {
                 throw error;
             }
         },
 
-        loginUser: async (_,args) => {
+        loginUser: async (_, { email, password }) => {
             try {
-                const user = await User.findOne({email: args.email});
+                const user = await User.findOne({ email });
                 if (!user) throw new Error('User not found');
-                const isValid = await user.isValidPassword(args.password);
+                const isValid = await user.isValidPassword(password);
                 if (!isValid) throw new Error('Invalid password');
                 return user;
             } catch (error) {
@@ -57,35 +56,34 @@ export const UsersResolver = {
             }
         },
 
-        updateUser: async (_, args) => {
+        updateUser: async (_, { id, ...updateData }) => {
             try {
-                const id = args.id;
                 if (!id) throw new Error('No id provided');
-                const user = await User.findById(args.id);
-                if (!user) throw new Error('User not found');
-                const updateUser = await User.findByIdAndUpdate(id, {...args}, {new: true, runValidators: true});
-                return updateUser;
+                const user = await User.findById(id);
+                if (!user) handleUserNotFoundError(id);
+                const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+                return updatedUser;
             } catch (error) {
                 throw error;
             }
         },
 
-        deleteUser: async (_, args) => {
+        deleteUser: async (_, { id }) => {
             try {
-                const id = args.id;
                 if (!id) throw new Error('No id provided');
-                const user = await User.findById(args.id);
-                if (!user) throw new Error('User not found');
-                const deleteUser = await User.findByIdAndDelete(id);
+                const user = await User.findById(id);
+                if (!user) handleUserNotFoundError(id);
+                const deletedUser = await User.findByIdAndDelete(id);
                 return {
                     success: true,
                     message: 'User deleted successfully',
-                    id: deleteUser?._id
+                    id: deletedUser?._id
                 };
             } catch (error) {
                 throw error;
             }
         }
     }
-}
+};
 
+export default UsersResolver;
