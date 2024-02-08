@@ -1,5 +1,5 @@
 
-const { User } = require('../model/user');
+const  User  = require('../model/user');
 
 const handleUserNotFoundError = (id) => {
     throw new Error(`User with id ${id} not found`);
@@ -36,9 +36,16 @@ const UsersResolver = {
         regUser: async (_, args) => {
             try {
                 const existingUser = await User.findOne({ email: args.email });
-                if (existingUser) throw new Error('User already exists');
-                const newUser = await User.create(args);
-                return newUser;
+                if (existingUser) {
+                    throw new Error('User already exists');
+                } else {
+                    const newUser = await User.create({
+                        username: args.username,
+                        email: args.email,
+                        password: args.password
+                    });
+                    return newUser;
+                }
             } catch (error) {
                 throw error;
             }
