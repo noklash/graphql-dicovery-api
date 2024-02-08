@@ -1,5 +1,5 @@
 
-import { User } from '../model/user';
+const { User } = require('../model/user');
 
 const handleUserNotFoundError = (id) => {
     throw new Error(`User with id ${id} not found`);
@@ -86,4 +86,4 @@ const UsersResolver = {
     }
 };
 
-export default UsersResolver;
+module.exports =  UsersResolver;

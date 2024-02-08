@@ -1,34 +1,36 @@
-import { buildSchema } from "graphql";
+const { buildSchema } = require("graphql");
 
-export const usersGQLSchema = buildSchema(`
-type User {
+const UsersGQLSchema = buildSchema(`
+  type User {
     id: String!
     username: String!
     email: String!
     password: String!
-}
+  }
 
-type Query {
-    users: usersInfoResponse!
+  type Query {
+    users: UsersInfoResponse!
     user(id: String!): User!
-}
+  }
 
-type usersInfoResponse {
+  type UsersInfoResponse {
     success: Boolean!
     total: Int!
     users: [User!]!
-}
+  }
 
-type Mutation {
-    regUser(username: String!, email: String!, pasword: String!): User!
+  type Mutation {
+    regUser(username: String!, email: String!, password: String!): User!
     loginUser(email: String!, password: String!): User!
-    updatedUser(id: String!, username: String, email: String, pasdsword: String): User!
-    deleteUser(id: String!): deleteResponse
-}
+    updateUser(id: String!, username: String, email: String, password: String): User!
+    deleteUser(id: String!): DeleteResponse!
+  }
 
-type deleteResponse {
+  type DeleteResponse {
     success: Boolean!
     message: String!
     id: String!
-}
-`)
+  }
+`);
+
+module.exports = UsersGQLSchema;

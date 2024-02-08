@@ -1,5 +1,6 @@
-import UsersResolver from "./user";
-import { PostsResolver } from "./post";
+const  UsersResolver = require("./user") ;
+const  { PostsResolver } = require("./post") ;
 
 
-export const resolvers = [UsersResolver, PostsResolver]
+const resolvers = [UsersResolver, PostsResolver]
+module.exports = resolvers

@@ -1,15 +1,14 @@
-import { buildSchema } from "graphql";
+const { buildSchema } = require("graphql");
 
-export const PostsGQLSchema = buildSchema(`
+const PostsGQLSchema = buildSchema(`
     type Post {
-      title: String!
-      description: String!
-      image: String!
-
+        title: String!
+        description: String!
+        image: String!
     }
 
-    type Query {
-        posts: postsInfoResponse!
+    type Query {  
+        posts: PostsInfoResponse!
         post(id: String!): Post!
     }
     
@@ -22,7 +21,7 @@ export const PostsGQLSchema = buildSchema(`
     type Mutation {
         addPost(title: String!, description: String!, image: String!): Post!
         updatePost(id: String!, title: String!, description: String!, image: String!): Post!
-        deleteResponse(id: String!): deleteResponse!
+        deletePost(id: String!): deleteResponse!
     }
 
     type deleteResponse {
@@ -30,4 +29,6 @@ export const PostsGQLSchema = buildSchema(`
         message: String!
         id: String!
     }
-`)
+`);
+
+module.exports = PostsGQLSchema;

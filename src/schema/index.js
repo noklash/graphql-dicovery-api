@@ -1,6 +1,7 @@
-import {mergeTypeDefs} from "@graphql-tools/merge"
+const  {mergeTypeDefs} = require("@graphql-tools/merge") 
 
-import { usersGQLSchema } from "./user"
-import { PostsGQLSchema } from "./posts"
+const   UsersGQLSchema  = require("./user") 
+const  PostsGQLSchema  = require("./posts") 
 
-export const mergedGQLSchema = mergeTypeDefs([usersGQLSchema, PostsGQLSchema])
+const mergedGQLSchema = mergeTypeDefs([UsersGQLSchema, PostsGQLSchema])
+module.exports = mergedGQLSchema

@@ -1,5 +1,6 @@
-import { Schema, model } from "mongoose";
-import bcrypt from "bcrypt"; 
+const { Schema, model } = require("mongoose");
+const bcrypt = require("bcrypt"); 
+
 const UserSchema = new Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true },
@@ -34,4 +35,4 @@ UserSchema.methods.isValidPassword = async function(password) {
 
 const User = model('User', UserSchema);
 
-export default User;
+module.exports =  User;
