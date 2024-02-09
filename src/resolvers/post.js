@@ -2,20 +2,28 @@ const  Post  = require('../model/post') ;
 
  const PostsResolver = {
     Query: {
-        posts: async () => {
-            try {
-                const posts = await Post.find({});
-                return {
-                    success: true,
-                    total: posts.length,
-                    posts
-                };
-            } catch (error) {
-                throw new Error('Failed to fetch posts');
+        posts: async (_, __, context) => {
+            if (!context.user) {
+                throw new Error('Unauthorized')
+            }else{
+                try {
+                    const posts = await Post.find({});
+                    return {
+                        success: true,
+                        total: posts.length,
+                        posts
+                    };
+                } catch (error) {
+                    throw new Error('Failed to fetch posts');
+                }
             }
+            
         },
 
-        post: async (_, { id }) => {
+        post: async (_, { id }, context) => {
+            if (!context.user){
+                throw new Error('Unauthorized')
+            }
             try {
                 if (!id) throw new Error('No id provided');
                 const post = await Post.findById(id);
@@ -28,7 +36,10 @@ const  Post  = require('../model/post') ;
     },
 
     Mutation: {
-        addPost: async (_, args) => {
+        addPost: async (_, args, context) => {
+            if (!context.user){
+                throw new Error('Unauthorized')
+            }
             try {
                 const existingPost = await Post.findOne({ title: args.title });
                 if (existingPost) throw new Error('Post already exists');
@@ -39,7 +50,10 @@ const  Post  = require('../model/post') ;
             }
         },
 
-        updatePost: async (_, args) => {
+        updatePost: async (_, args, context) => {
+            if (!context.user){
+                throw new Error('Unauthorized')
+            }
             try {
                 const { id, ...updateData } = args;
                 if (!id) throw new Error('No id provided');
@@ -52,7 +66,10 @@ const  Post  = require('../model/post') ;
             }
         },
 
-        deletePost: async (_, { id }) => {
+        deletePost: async (_, { id }, context) => {
+            if (!context.user){
+                throw new Error('Unauthorized')
+            }
             try {
                 if (!id) throw new Error('No id provided');
                 const post = await Post.findById(id);
