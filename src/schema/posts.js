@@ -2,6 +2,7 @@ const { buildSchema } = require("graphql");
 
 const PostsGQLSchema = buildSchema(`
     type Post {
+        id: String
         title: String!
         description: String!
         image: String!

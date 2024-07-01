@@ -65,9 +65,11 @@ const UsersResolver = {
         },
 
         updateUser: async (_, { id, ...updateData }, context) => {
-            if (!context.user){
-                throw new Error('Unauthorized')
-            }
+// FIX ME =>
+            // if (!context.user){
+            //     throw new Error('Unauthorized')
+            // }
+
             try {
                 if (!id) throw new Error('No id provided');
                 const user = await User.findById(id);
@@ -80,9 +82,10 @@ const UsersResolver = {
         },
 
         deleteUser: async (_, { id }, context) => {
-            if (!context.user){
-                throw new Error('Unauthorized')
-            }
+//  FIX ME =>
+            // if (!context.user){
+            //     throw new Error('Unauthorized')
+            // }
             try {
                 if (!id) throw new Error('No id provided');
                 const user = await User.findById(id);
