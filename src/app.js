@@ -8,7 +8,7 @@ const  resolvers  = require("./resolvers");
 
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 const server = new ApolloServer({
     typeDefs: mergedGQLSchema,
