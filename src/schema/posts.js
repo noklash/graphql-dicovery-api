@@ -20,7 +20,7 @@ const PostsGQLSchema = buildSchema(`
     }
 
     type Mutation {
-        addPost(title: String!, description: String!, image: String!): Post!
+        addPost(title: String!, description: String!, image: String!, userId: String): Post!
         updatePost(id: String!, title: String!, description: String!, image: String!): Post!
         deletePost(id: String!): deleteResponse!
     }

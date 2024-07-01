@@ -1,4 +1,5 @@
 const  Post  = require('../model/post') ;
+const User = require('../model/user');
 
  const PostsResolver = {
     Query: {
@@ -36,19 +37,50 @@ const  Post  = require('../model/post') ;
     },
 
     Mutation: {
-        addPost: async (_, args, context) => {
-            // if (!context.user){
-            //     throw new Error('Unauthorized')
-            // }
+        // addPost: async (_, args, context) => {
+        //     // if (!context.user){
+        //     //     throw new Error('Unauthorized')
+        //     // }
+        //     try {
+        //         const existingPost = await Post.findOne({ title: args.title });
+        //         if (existingPost) throw new Error('Post already exists');
+        //         const newPost = await Post.create(args);
+        //         return newPost;
+        //     } catch (error) {
+        //         throw error;
+        //     }
+        // },
+
+        addPost: async (_, { title, description, image, userId }) => {
             try {
-                const existingPost = await Post.findOne({ title: args.title });
-                if (existingPost) throw new Error('Post already exists');
-                const newPost = await Post.create(args);
-                return newPost;
+              // Find the user by ID
+              const user = await User.findById(userId);
+              if (!user) {
+                throw new Error('User not found');
+              }
+      
+              // Create a new post
+              const newPost = new Post({
+                title,
+                description,
+                image,
+                user: user._id
+              });
+      
+              // Save the post
+              await newPost.save();
+      
+              // Add the post to the user's posts array
+              user.posts.push(newPost._id);
+              await user.save();
+      
+              // Return the newly created post
+              return newPost;
             } catch (error) {
-                throw error;
+              console.error(error);
+              throw new Error('Error creating post');
             }
-        },
+          },
 
         updatePost: async (_, args, context) => {
             // if (!context.user){
