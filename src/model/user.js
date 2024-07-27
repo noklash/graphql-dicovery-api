@@ -4,7 +4,8 @@ const bcrypt = require("bcrypt");
 const UserSchema = new Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    posts: [{ type: Schema.Types.ObjectId, ref: 'Post' }]
 });
 
 // Define pre-save hook to hash the password before saving

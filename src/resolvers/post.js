@@ -1,4 +1,4 @@
-const  Post  = require('../model/post') ;
+const Post  = require('../model/post') ;
 const User = require('../model/user');
 
  const PostsResolver = {
@@ -18,7 +18,6 @@ const User = require('../model/user');
                     throw new Error('Failed to fetch posts');
                 }
             
-            
         },
 
         post: async (_, { id }, context) => {
@@ -27,7 +26,7 @@ const User = require('../model/user');
             // }
             try {
                 if (!id) throw new Error('No id provided');
-                const post = await Post.findById(id);
+                const post = await Post.findById(id).populate('user');  
                 if (!post) throw new Error('No post found');
                 return post;
             } catch (error) {
@@ -53,31 +52,37 @@ const User = require('../model/user');
 
         addPost: async (_, { title, description, image, userId }) => {
             try {
-              // Find the user by ID
+              // Log input parameters
+              console.log('addPost input:', { title, description, image, userId });
+      
               const user = await User.findById(userId);
               if (!user) {
                 throw new Error('User not found');
               }
       
-              // Create a new post
               const newPost = new Post({
                 title,
                 description,
                 image,
-                user: user._id
+                user: user._id,
               });
       
-              // Save the post
-              await newPost.save();
+              // Save the new post to the database
+              const savedPost = await newPost.save();
       
-              // Add the post to the user's posts array
-              user.posts.push(newPost._id);
+              // Add the post ID to the user's posts array and save the user
+              user.posts.push(savedPost._id);
               await user.save();
       
-              // Return the newly created post
-              return newPost;
+              // Populate the user field in the saved post before returning it
+              await savedPost.populate('user');
+      
+              // Log the saved post
+              console.log('Post created:', savedPost);
+      
+              return savedPost;
             } catch (error) {
-              console.error(error);
+              console.error('Error creating post:', error);
               throw new Error('Error creating post');
             }
           },

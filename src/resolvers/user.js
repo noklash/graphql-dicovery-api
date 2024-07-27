@@ -1,5 +1,6 @@
 
 const  User  = require('../model/user');
+const  Post  = require('../model/post');
 
 const handleUserNotFoundError = (id) => {
     throw new Error(`User with id ${id} not found`);
@@ -8,7 +9,6 @@ const handleUserNotFoundError = (id) => {
 const UsersResolver = {
     Query: {
         users: async () => {
-        
             try {
                 const users = await User.find({});
                 return {
@@ -24,8 +24,10 @@ const UsersResolver = {
         user: async (_, { id }) => {
             try {
                 if (!id) throw new Error('No id provided');
-                const user = await User.findById(id);
+                const user = await User.findById(id).populate("posts");
+                
                 if (!user) handleUserNotFoundError(id);
+                console.log(user)
                 return user;
             } catch (error) {
                 throw error;
@@ -64,12 +66,7 @@ const UsersResolver = {
             }
         },
 
-        updateUser: async (_, { id, ...updateData }, context) => {
-// FIX ME =>
-            // if (!context.user){
-            //     throw new Error('Unauthorized')
-            // }
-
+        updateUser: async (_, { id, ...updateData }) => {
             try {
                 if (!id) throw new Error('No id provided');
                 const user = await User.findById(id);
@@ -81,11 +78,7 @@ const UsersResolver = {
             }
         },
 
-        deleteUser: async (_, { id }, context) => {
-//  FIX ME =>
-            // if (!context.user){
-            //     throw new Error('Unauthorized')
-            // }
+        deleteUser: async (_, { id }) => {
             try {
                 if (!id) throw new Error('No id provided');
                 const user = await User.findById(id);
@@ -103,4 +96,4 @@ const UsersResolver = {
     }
 };
 
-module.exports =  UsersResolver;
+module.exports =  UsersResolver

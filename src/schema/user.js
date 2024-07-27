@@ -2,11 +2,12 @@ const { buildSchema } = require("graphql");
 
 const UsersGQLSchema = buildSchema(`
 
-  type Post {
+   type Post {
     id: String
     title: String!
     description: String!
     image: String!
+    
   }
 
   type User {
