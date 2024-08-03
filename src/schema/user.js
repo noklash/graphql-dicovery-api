@@ -7,8 +7,9 @@ const UsersGQLSchema = buildSchema(`
     title: String!
     description: String!
     image: String!
-    
   }
+
+ 
 
   type User {
     id: String!
@@ -16,6 +17,11 @@ const UsersGQLSchema = buildSchema(`
     email: String!
     password: String!
     posts: [Post!]
+  }
+    
+  type AuthPayload {
+    token: String
+    user: User
   }
 
   type Query {
@@ -31,7 +37,7 @@ const UsersGQLSchema = buildSchema(`
 
   type Mutation {
     regUser(username: String!, email: String!, password: String!): User!
-    loginUser(email: String!, password: String!): User!
+    loginUser(email: String!, password: String!): AuthPayload
     updateUser(id: String!, username: String, email: String, password: String): User!
     deleteUser(id: String!): DeleteResponse!
   }

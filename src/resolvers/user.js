@@ -1,6 +1,6 @@
 
 const  User  = require('../model/user');
-const  Post  = require('../model/post');
+const { createToken } = require('../middleware/authenticateUser')
 
 const handleUserNotFoundError = (id) => {
     throw new Error(`User with id ${id} not found`);
@@ -27,7 +27,7 @@ const UsersResolver = {
                 const user = await User.findById(id).populate("posts");
                 
                 if (!user) handleUserNotFoundError(id);
-                console.log(user)
+                console.log(`user is:::::      ${user}`)
                 return user;
             } catch (error) {
                 throw error;
@@ -47,6 +47,7 @@ const UsersResolver = {
                         email: args.email,
                         password: args.password
                     });
+                   
                     return newUser;
                 }
             } catch (error) {
@@ -60,7 +61,12 @@ const UsersResolver = {
                 if (!user) throw new Error('User not found');
                 const isValid = await user.isValidPassword(password);
                 if (!isValid) throw new Error('Invalid password');
-                return user;
+                const token = createToken(user);
+
+                return {
+                    token,
+                    user
+                };
             } catch (error) {
                 throw error;
             }

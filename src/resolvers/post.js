@@ -8,7 +8,8 @@ const User = require('../model/user');
             //     throw new Error('Unauthorized')
             // }
                 try {
-                    const posts = await Post.find({});
+                    const posts = await Post.find({}).populate('user');
+                    console.log(posts)
                     return {
                         success: true,
                         total: posts.length,
@@ -19,6 +20,18 @@ const User = require('../model/user');
                 }
             
         },
+        // ENDS HERE
+
+        // posts: async () => {
+        //     const posts = await Post.find().populate('user');
+        //     return posts.map(post => ({
+        //       ...post._doc,
+        //       user: {
+        //         ...post.user._doc,
+        //         id: post.user._id.toString(),
+        //       },
+        //     }));
+        //   },
 
         post: async (_, { id }, context) => {
             // if (!context.user){

@@ -2,6 +2,12 @@ const { buildSchema } = require("graphql");
 
 const PostsGQLSchema = buildSchema(`
      
+    scalar Upload
+
+    type File {
+    url: String!
+   }
+
     type User {
     id: String!
     username: String!
@@ -33,6 +39,7 @@ const PostsGQLSchema = buildSchema(`
         addPost(title: String!, description: String!, image: String!, userId: String): Post
         updatePost(id: String!, title: String!, description: String!, image: String!): Post
         deletePost(id: String!): deleteResponse!
+        uploadImage(file: Upload!): File!
     }
 
     type deleteResponse {
