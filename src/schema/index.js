@@ -74,7 +74,7 @@ const mergedSchema = buildSchema(`
     updatePost(id: String!, title: String!, description: String!, image: String!): Post!
     deletePost(id: String!): DeleteResponse!
     uploadImage(file: Upload!): File!
-    sendMessage(recipientId: String!, content: String!): Chat!
+    sendMessage(senderId: String!, recipientId: String!, content: String!): Chat!
   }
 
   # Single Subscription Type

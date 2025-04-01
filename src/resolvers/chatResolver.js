@@ -25,13 +25,15 @@ const ChatResolver = {
     },
   },
   Mutation: {
-    sendMessage: async (_, { recipientId, content }, { user }) => {
+    sendMessage: async (_, { senderId, recipientId, content }) => {
+      // sendMessage: async (_, {  recipientId, content }, { user }) => {
       try {
-        if (!user) throw new Error('Authentication required');
+        // if (!user) throw new Error('Authentication required');
         const recipient = await User.findById(recipientId);
         if (!recipient) throw new Error(`User with id ${recipientId} not found`);
         const chat = await Chat.create({
-          sender: user.id,
+          // sender: user.id,
+          sender: senderId,
           recipient: recipientId,
           content,
         });
