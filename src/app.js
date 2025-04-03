@@ -2,10 +2,12 @@ require('dotenv').config();
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
 const express = require('express');
+const cors = require('cors');
 const { createServer } = require('http');
 const { WebSocketServer } = require('ws');
 const { useServer } = require('graphql-ws/use/ws');
-// const { useServer } = require('graphql-ws'); // Updated import
+const { makeExecutableSchema } = require('@graphql-tools/schema');
+const { PubSub } = require('graphql-subscriptions');
 const connectToDb = require('./db/connect');
 const mergedGQLSchema = require('./schema');
 const resolvers = require('./resolvers');
@@ -13,6 +15,14 @@ const { verifyToken } = require('./middleware/authenticateUser');
 
 const PORT = process.env.PORT || 8080;
 const app = express();
+
+// Configure CORS to allow credentials and specific origin
+app.use(cors({
+  origin: 'http://localhost:3000', // Explicitly allow client origin
+  credentials: true, // Allow cookies/credentials
+}));
+app.use(express.json()); // Ensure JSON parsing is after CORS
+
 const httpServer = createServer(app);
 
 const wsServer = new WebSocketServer({
@@ -20,19 +30,37 @@ const wsServer = new WebSocketServer({
   path: '/graphql',
 });
 
+const pubsub = new PubSub();
+console.log('PubSub initialized:', pubsub);
+if (typeof pubsub.asyncIterator !== 'function') {
+  console.error('PubSub missing asyncIterator at initialization!');
+  process.exit(1);
+}
+
+const schema = makeExecutableSchema({
+  typeDefs: mergedGQLSchema,
+  resolvers,
+});
+
 const getContext = ({ req, connectionParams }) => {
   let token;
   if (req) token = req.headers.authorization || '';
   else if (connectionParams) token = connectionParams.authorization || '';
+  console.log('Raw token:', token);
   if (token) {
     try {
-      const decoded = verifyToken(token.replace('Bearer ', ''));
-      return { user: decoded };
+      const cleanToken = token.replace('Bearer ', '');
+      console.log('Cleaned token:', cleanToken);
+      const decoded = verifyToken(cleanToken);
+      console.log('Decoded token:', decoded);
+      return { user: decoded, pubsub };
     } catch (err) {
       console.warn('Invalid token:', err.message);
+      return { pubsub };
     }
   }
-  return {};
+  console.log('No token provided');
+  return { pubsub };
 };
 
 const server = new ApolloServer({
@@ -45,7 +73,7 @@ const server = new ApolloServer({
       async serverWillStart() {
         return {
           async drainServer() {
-            await httpServer.close();
+            await new Promise((resolve) => httpServer.close(resolve));
           },
         };
       },
@@ -54,7 +82,7 @@ const server = new ApolloServer({
       async serverWillStart() {
         return {
           async drainServer() {
-            await wsServer.close();
+            await new Promise((resolve) => wsServer.close(resolve));
           },
         };
       },
@@ -71,21 +99,37 @@ const start = async () => {
     console.log('Connected to the database');
     await server.start();
 
-    useServer(
+    const serverCleanup = useServer(
       {
-        schema: server.schema,
-        context: (ctx) => getContext({ connectionParams: ctx.connectionParams }),
+        schema,
+        context: async (ctx) => getContext({ connectionParams: ctx.connectionParams }),
         onConnect: async (ctx) => {
           console.log('WebSocket client connected');
           const context = await getContext({ connectionParams: ctx.connectionParams });
+          console.log('WebSocket context:', context);
           if (!context.user) throw new Error('Authentication required');
+          return context;
         },
-        onDisconnect: () => console.log('WebSocket client disconnected'),
+        onSubscribe: (ctx, msg) => {
+          console.log('Subscription request received:', msg);
+        },
+        onNext: (ctx, msg, args, result) => {
+          console.log('Subscription data sent:', result);
+        },
+        onError: (ctx, msg, errors) => {
+          console.error('WebSocket subscription error:', { msg, errors });
+        },
+        onComplete: (ctx, msg) => {
+          console.log('Subscription completed:', msg);
+        },
+        onDisconnect: (ctx, code, reason) => {
+          console.log(`WebSocket disconnected with code: ${code}, reason: ${reason}`);
+        },
       },
       wsServer
     );
 
-    app.use('/graphql', express.json(), expressMiddleware(server, {
+    app.use('/graphql', expressMiddleware(server, {
       context: async ({ req }) => getContext({ req }),
     }));
 
@@ -93,8 +137,22 @@ const start = async () => {
       console.log(`Server ready at http://localhost:${PORT}/graphql`);
       console.log(`WebSocket subscriptions at ws://localhost:${PORT}/graphql`);
     });
+
+    process.on('SIGTERM', async () => {
+      console.log('SIGTERM received, shutting down...');
+      await serverCleanup.dispose();
+      await server.stop();
+      process.exit(0);
+    });
+    process.on('SIGINT', async () => {
+      console.log('SIGINT received, shutting down...');
+      await serverCleanup.dispose();
+      await server.stop();
+      process.exit(0);
+    });
   } catch (error) {
     console.error('Error starting server:', error);
+    process.exit(1);
   }
 };
 

@@ -26,6 +26,14 @@ const mergedSchema = buildSchema(`
     createdAt: String!
   }
 
+   type ChatMessage {
+    id: String!
+    content: String!
+    sender: User!
+    recipient: User!
+    createdAt: String!
+  }
+
   scalar Upload
 
   type File {
@@ -61,7 +69,7 @@ const mergedSchema = buildSchema(`
     user(id: String!): User!
     posts: PostsInfoResponse!
     post(id: String!): Post!
-    chats(senderId: String!, recipientId: String!): [Chat!]!
+    chats(senderId: String!, recipientId: String!): [ChatMessage!]!
   }
 
   # Single Mutation Type
@@ -74,7 +82,7 @@ const mergedSchema = buildSchema(`
     updatePost(id: String!, title: String!, description: String!, image: String!): Post!
     deletePost(id: String!): DeleteResponse!
     uploadImage(file: Upload!): File!
-    sendMessage(senderId: String!, recipientId: String!, content: String!): Chat!
+    sendMessage(senderId: String!, recipientId: String!, content: String!): ChatMessage!
   }
 
   # Single Subscription Type
@@ -82,8 +90,18 @@ const mergedSchema = buildSchema(`
     userAdded: User!
     userUpdated: User!
     userDeleted: DeleteResponse!
-    messageReceived(senderId: String!, recipientId: String!): Chat!
+    messageReceived(senderId: String!, recipientId: String!): ChatMessage!
   }
+
+
+
+ 
+
+  
+
+ 
+
+  
 `);
 
 module.exports = mergedSchema;
